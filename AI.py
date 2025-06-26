@@ -6,41 +6,40 @@ from typing import List, Tuple, Optional
 ROWS = 6
 COLS = 12
 WIN_COUNT = 4
-MAX_TIME = 9.96  # Limite de temps en secondes
+MAX_TIME = 9.96  # Time limit in seconds
 
-def Terminal_Test(board: List[List[int]]) -> bool:
+def is_terminal(board: List[List[int]]) -> bool:
     if check_winner(board) != 0:
         return True
     return is_board_full(board)
 
-def IA_Decision(board: List[List[int]]) -> int:
+def ai_decision(board: List[List[int]]) -> int:
     start_time = time.time()
     
-    # Recherche Alpha-Beta avec profondeur croissante
-    best_col = 0
+    # Iterative deepening with Alpha-Beta pruning
+    best_column = 0
     depth = 1
     
     while depth <= 6:  # MAX_DEPTH
-        if time.time() - start_time > MAX_TIME * 0.4:  
+        if time.time() - start_time > MAX_TIME * 0.4:
             break
                 
         try:
-            col = alpha_beta_search(board, depth, start_time)
-            if col is not None:
-                best_col = col
+            column = alpha_beta_search(board, depth, start_time)
+            if column is not None:
+                best_column = column
             depth += 1
         except TimeoutError:
             break
                 
-    return best_col
+    return best_column
 
 def alpha_beta_search(board: List[List[int]], max_depth: int, start_time: float) -> Optional[int]:
-    
     if time.time() - start_time >= MAX_TIME:
         raise TimeoutError()
     
-    _, best_col = max_value(board, -math.inf, math.inf, 0, max_depth, start_time)
-    return best_col
+    _, best_column = max_value(board, -math.inf, math.inf, 0, max_depth, start_time)
+    return best_column
 
 def max_value(board: List[List[int]], alpha: float, beta: float, 
               depth: int, max_depth: int, start_time: float) -> Tuple[float, Optional[int]]:
@@ -48,26 +47,26 @@ def max_value(board: List[List[int]], alpha: float, beta: float,
     if time.time() - start_time >= MAX_TIME:
         raise TimeoutError()
 
-    if Terminal_Test(board) or depth >= max_depth:
-        return utility(board, depth), None
+    if is_terminal(board) or depth >= max_depth:
+        return evaluate_utility(board, depth), None
         
-    v = -math.inf
-    best_col = None
+    value = -math.inf
+    best_column = None
     
-    for col in get_valid_columns(board):
-        new_board = make_move(board, col, 1)  # PLAYER_1
+    for column in get_valid_columns(board):
+        new_board = make_move(board, column, 1)  # PLAYER_1
         min_val, _ = min_value(new_board, alpha, beta, depth + 1, max_depth, start_time)
         
-        if min_val > v:
-            v = min_val
-            best_col = col
+        if min_val > value:
+            value = min_val
+            best_column = column
             
-        if v >= beta:
-            return v, best_col
+        if value >= beta:
+            return value, best_column
             
-        alpha = max(alpha, v)
+        alpha = max(alpha, value)
         
-    return v, best_col
+    return value, best_column
 
 def min_value(board: List[List[int]], alpha: float, beta: float,
               depth: int, max_depth: int, start_time: float) -> Tuple[float, Optional[int]]:
@@ -75,44 +74,43 @@ def min_value(board: List[List[int]], alpha: float, beta: float,
     if time.time() - start_time >= MAX_TIME:
         raise TimeoutError()
 
-    if Terminal_Test(board) or depth >= max_depth:
-        return utility(board, depth), None
+    if is_terminal(board) or depth >= max_depth:
+        return evaluate_utility(board, depth), None
         
-    v = math.inf
-    best_col = None
+    value = math.inf
+    best_column = None
     
-    for col in get_valid_columns(board):
-        new_board = make_move(board, col, -1)  # PLAYER_2
+    for column in get_valid_columns(board):
+        new_board = make_move(board, column, -1)  # PLAYER_2
         max_val, _ = max_value(new_board, alpha, beta, depth + 1, max_depth, start_time)
         
-        if max_val < v:
-            v = max_val
-            best_col = col
+        if max_val < value:
+            value = max_val
+            best_column = column
             
-        if v <= alpha:
-            return v, best_col
+        if value <= alpha:
+            return value, best_column
             
-        beta = min(beta, v)
+        beta = min(beta, value)
         
-    return v, best_col
+    return value, best_column
 
-def utility(board: List[List[int]], depth: int) -> float:
+def evaluate_utility(board: List[List[int]], depth: int) -> float:
     winner = check_winner(board)
     
     if winner == 1:  # PLAYER_1
-        return 1000 - depth  # Victoire rapide préférée
+        return 1000 - depth  # Prefer quick wins
     elif winner == -1:  # PLAYER_2
-        return -1000 + depth  # Défaite retardée préférée
+        return -1000 + depth  # Prefer delayed losses
     elif is_board_full(board):
-        return 0  # Match nul
+        return 0  # Draw
     else:
-        # Évaluation heuristique
-        return evaluate_board(board)
+        return evaluate_board(board)  # Heuristic evaluation
 
 def evaluate_board(board: List[List[int]]) -> float:
     score = 0
     
-    # Évaluer toutes les fenêtres de 4 cases
+    # Evaluate all 4-cell windows
     # Horizontal
     for row in range(ROWS):
         for col in range(COLS - 3):
@@ -125,37 +123,37 @@ def evaluate_board(board: List[List[int]]) -> float:
             window = [board[row + i][col] for i in range(4)]
             score += evaluate_window(window)
     
-    # Diagonal positive
+    # Positive diagonal
     for row in range(ROWS - 3):
         for col in range(COLS - 3):
             window = [board[row + i][col + i] for i in range(4)]
             score += evaluate_window(window)
     
-    # Diagonal négative
+    # Negative diagonal
     for row in range(3, ROWS):
         for col in range(COLS - 3):
             window = [board[row - i][col + i] for i in range(4)]
             score += evaluate_window(window)
     
-    # Bonus pour les colonnes centrales
-    center_col = COLS // 2
+    # Bonus for center column
+    center_column = COLS // 2
     for row in range(ROWS):
-        if board[row][center_col] == 1:  # PLAYER_1
+        if board[row][center_column] == 1:  # PLAYER_1
             score += 3
     
     return score
 
 def evaluate_window(window: List[int]) -> float:
     score = 0
-    player1_count = window.count(1)   # PLAYER_1
-    player2_count = window.count(-1)  # PLAYER_2
-    empty_count = window.count(0)     # EMPTY
+    player1_count = window.count(1)
+    player2_count = window.count(-1)
+    empty_count = window.count(0)
     
-    # Si les deux joueurs sont dans la même fenêtre, pas d'intérêt
+    # If both players are in the window, it's neutral
     if player1_count > 0 and player2_count > 0:
         return 0
     
-    # Évaluation pour notre joueur
+    # Evaluation for our player
     if player1_count == 4:
         score += 1000
     elif player1_count == 3 and empty_count == 1:
@@ -165,11 +163,11 @@ def evaluate_window(window: List[int]) -> float:
     elif player1_count == 1 and empty_count == 3:
         score += 1
     
-    # Évaluation pour l'adversaire (défensive)
+    # Defensive evaluation for opponent
     if player2_count == 4:
         score -= 1000
     elif player2_count == 3 and empty_count == 1:
-        score -= 80  # Plus important de bloquer
+        score -= 80  # Important to block
     elif player2_count == 2 and empty_count == 2:
         score -= 15
     elif player2_count == 1 and empty_count == 3:
@@ -178,16 +176,16 @@ def evaluate_window(window: List[int]) -> float:
     return score
 
 def get_valid_columns(board: List[List[int]]) -> List[int]:
-    valid_cols = []
+    valid_columns = []
     for col in range(COLS):
         if board[0][col] == 0:  # EMPTY
-            valid_cols.append(col)
-    return valid_cols
+            valid_columns.append(col)
+    return valid_columns
 
 def make_move(board: List[List[int]], col: int, player: int) -> List[List[int]]:
     new_board = [row[:] for row in board]
     
-    # Trouver la ligne la plus basse disponible
+    # Find the lowest available row
     for row in range(ROWS - 1, -1, -1):
         if new_board[row][col] == 0:  # EMPTY
             new_board[row][col] = player
@@ -196,7 +194,7 @@ def make_move(board: List[List[int]], col: int, player: int) -> List[List[int]]:
     return new_board
 
 def check_winner(board: List[List[int]]) -> int:
-    # Vérifier horizontal
+    # Check horizontal
     for row in range(ROWS):
         for col in range(COLS - 3):
             if (board[row][col] != 0 and
@@ -204,7 +202,7 @@ def check_winner(board: List[List[int]]) -> int:
                 board[row][col+2] == board[row][col+3]):
                 return board[row][col]
     
-    # Vérifier vertical
+    # Check vertical
     for row in range(ROWS - 3):
         for col in range(COLS):
             if (board[row][col] != 0 and
@@ -212,7 +210,7 @@ def check_winner(board: List[List[int]]) -> int:
                 board[row+2][col] == board[row+3][col]):
                 return board[row][col]
     
-    # Vérifier diagonal montante
+    # Check positive diagonal
     for row in range(ROWS - 3):
         for col in range(COLS - 3):
             if (board[row][col] != 0 and
@@ -220,7 +218,7 @@ def check_winner(board: List[List[int]]) -> int:
                 board[row+2][col+2] == board[row+3][col+3]):
                 return board[row][col]
     
-    # Vérifier diagonal descendante
+    # Check negative diagonal
     for row in range(3, ROWS):
         for col in range(COLS - 3):
             if (board[row][col] != 0 and
@@ -232,7 +230,3 @@ def check_winner(board: List[List[int]]) -> int:
 
 def is_board_full(board: List[List[int]]) -> bool:
     return all(board[0][col] != 0 for col in range(COLS))
-
-def random_valid_move(board: List[List[int]]) -> Optional[int]:
-    valid = get_valid_columns(board)
-    return random.choice(valid) if valid else None
