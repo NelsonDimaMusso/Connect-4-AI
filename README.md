@@ -27,7 +27,7 @@ The AI uses an alpha-beta pruning algorithm with adaptive depth and a time limit
 It evaluates board positions by scanning 4-cell windows to anticipate offensive and defensive moves.
 
 ### Run the mode  
-    python you_vs_ai.py
+    python YOU_VS_AI.py
 
 ### Code snippet  
     game = ConnectFour()
@@ -47,7 +47,7 @@ AI modules are reloaded each game to allow hot updates.
 The board is displayed every turn with full game rule enforcement.
 
 ### Run the mode  
-    python ai_vs_ai.py
+    python AI_vs_AI.py
 
 ### Code snippet  
     referee = Referee()
