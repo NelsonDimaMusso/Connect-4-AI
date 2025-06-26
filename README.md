@@ -18,8 +18,8 @@ The project emphasizes code quality, modularity, and experimentation with differ
 - Board size: 6 rows x 12 columns  
 - Goal: connect 4 tokens vertically, horizontally, or diagonally  
 - Players:  
-  - AI (Red tokens ‘R’) = 1  
-  - Human (Yellow tokens ‘Y’) = -1  
+  - AI (Red tokens ‘R’)  
+  - Human (Yellow tokens ‘Y’)  
 - Choose who starts first (AI or Human)
 
 ### How it works  
