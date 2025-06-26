@@ -68,7 +68,7 @@ Ideal for:
 
 ## Screenshots / Visuals  
 
-*(Insert here images, GIFs, or videos showing gameplay, the board, or AI in action)*
+<img width="294" alt="image" src="https://github.com/user-attachments/assets/2bfc544a-76f7-47b9-b3ad-d953507b7d6f" />
 
 ---
 
