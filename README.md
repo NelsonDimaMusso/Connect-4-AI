@@ -66,7 +66,7 @@ Ideal for:
 
 ---
 
-## Screenshots / Visuals  
+## Screenshot 
 
 <img width="294" alt="image" src="https://github.com/user-attachments/assets/2bfc544a-76f7-47b9-b3ad-d953507b7d6f" />
 
